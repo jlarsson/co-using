@@ -1,6 +1,7 @@
 'use strict'
 
 let assert = require('assert')
+let debug = require('debug')('co-using:semaphore')
 let Promise = require('native-or-bluebird')
 
 let defaultContainer = {}
@@ -28,10 +29,10 @@ let Semaphore = (function () {
 
   proto.acquireState = function () {
     if (this.nc) {
-      return this.nc.c[this.nc.n] || (this.nc.c[this.nc.n] = new SemaphoreState(this.maxCount))
+      return this.nc.c[this.nc.n] || (this.nc.c[this.nc.n] = new SemaphoreState(this.maxCount, this.nc))
     }
     if (!this.state) {
-      this.state = new SemaphoreState(this.maxCount)
+      this.state = new SemaphoreState(this.maxCount, this.nc)
     }
     return this.state
   }
@@ -46,7 +47,8 @@ let Semaphore = (function () {
 })()
 
 let SemaphoreState = (function () {
-  function SemaphoreState (maxCount) {
+  function SemaphoreState (maxCount, nc) {
+    this.nc = nc
     this.maxCount = maxCount
     this.count = 0
     this.pending = []
@@ -62,6 +64,8 @@ let SemaphoreState = (function () {
   }
 
   proto.release = function (handle) {
+    this.nc && debug('release %s', this.nc.n)
+
     assert(handle !== null, 'Invalid attempt to release null semaphore handle')
     assert(handle.state === this, 'Invalid attempt to release semaphore handle')
     assert(this.count > 0)
@@ -72,6 +76,8 @@ let SemaphoreState = (function () {
 
   proto.awake = function awake () {
     while ((this.count < this.maxCount) && (this.pending.length)) {
+      this.nc && debug('acquire %s', this.nc.n)
+
       ++this.count
       let resolve = this.pending.shift()
       resolve({state: this})

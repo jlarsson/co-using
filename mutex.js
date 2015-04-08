@@ -1,6 +1,7 @@
 'use strict'
 
 let assert = require('assert')
+let debug = require('debug')('co-using:mutex')
 let Promise = require('native-or-bluebird')
 
 let defaultContainer = {}
@@ -29,7 +30,7 @@ let Mutex = (function () {
     if (this.nc) {
       let n = this.nc.n
       let c = this.nc.c
-      return c[n] || (c[n] = new MutexState())
+      return c[n] || (c[n] = new MutexState(this.nc))
     }
     if (!this.state) {
       this.state = new MutexState()
@@ -47,10 +48,8 @@ let Mutex = (function () {
 })()
 
 let MutexState = (function () {
-  let MutexState = function () {
-    if (!(this instanceof MutexState)) {
-      return new MutexState()
-    }
+  let MutexState = function (nc) {
+    this.nc = nc
     this.pending = []
     this.current = null
   }
@@ -65,6 +64,7 @@ let MutexState = (function () {
   }
 
   proto.release = function (handle) {
+    this.nc && debug('release %s', this.nc.n)
     assert.ok(handle === this.current, 'Invalid attempt to release mutex handle')
     this.current = null
     return !this.awake()
@@ -77,6 +77,8 @@ let MutexState = (function () {
     if (this.pending.length === 0) {
       return false
     }
+
+    this.nc && debug('acquire %s', this.nc.n)
 
     this.current = {}
     let resolve = this.pending.shift()

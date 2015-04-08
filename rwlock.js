@@ -1,6 +1,7 @@
 'use strict'
 
 let assert = require('assert')
+let debug = require('debug')('co-using:rwlock')
 let Promise = require('native-or-bluebird')
 
 module.exports = RwLock
@@ -35,7 +36,7 @@ let InternalRwLock = (function () {
 
   proto.acquireState = function () {
     if (this.nc) {
-      return this.nc.c[this.nc.n] || (this.nc.c[this.nc.n] = new RwLockState(this.maxReaders))
+      return this.nc.c[this.nc.n] || (this.nc.c[this.nc.n] = new RwLockState(this.maxReaders, this.nc))
     }
     if (!this.state) {
       this.state = new RwLockState(this.maxReaders)
@@ -53,11 +54,12 @@ let InternalRwLock = (function () {
 })()
 
 let RwLockState = (function () {
-  function RwLockState (maxReaders) {
+  function RwLockState (maxReaders, nc) {
     this.pending = []
     this.writer = null
     this.maxReaders = maxReaders
     this.readers = 0
+    this.nc = nc
   }
   let proto = RwLockState.prototype
 
@@ -69,6 +71,7 @@ let RwLockState = (function () {
   }
 
   proto.releaseReadLock = function (handle) {
+    this.nc && debug('release read %s', this.nc.n)
     assert(handle !== null, 'Invalid attempt to release null read lock handle')
     assert(handle.t === 'r', 'Invalid attempt to release read lock handle')
     assert(handle.o === this, 'Invalid attempt to release read lock handle')
@@ -85,6 +88,7 @@ let RwLockState = (function () {
   }
 
   proto.releaseWriteLock = function (handle) {
+    this.nc && debug('release write %s', this.nc.n)
     assert(handle !== null, 'Invalid attempt to release null write lock handle')
     assert(handle === this.writer, 'Invalid attempt to release write lock handle')
     this.writer = null
@@ -102,6 +106,9 @@ let RwLockState = (function () {
       if (this.readers === this.maxReaders) {
         return true
       }
+
+      this.nc && debug('acquire read %s', this.nc.n)
+
       let rec = this.pending.shift()
       ++this.readers
       rec.resolve({t: 'r', o: this})
@@ -113,6 +120,7 @@ let RwLockState = (function () {
     }
 
     if (this.pending.length && (this.pending[0].type === 'write')) {
+      this.nc && debug('acquire write %s', this.nc.n)
       let rec = this.pending.shift()
       this.writer = {t: 'w', o: this}
       rec.resolve(this.writer)

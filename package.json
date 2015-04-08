@@ -1,6 +1,6 @@
 {
   "name": "co-using",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -18,10 +18,24 @@
   "homepage": "https://github.com/jlarsson/co-using",
   "dependencies": {
     "co": "^4.5.1",
+    "debug": "^2.1.3",
     "native-or-bluebird": "^1.2.0"
   },
   "devDependencies": {
     "mocha": "^2.2.4"
   },
-  "files": ["*.js"]
+  "files": [
+    "*.js"
+  ],
+  "keywords": [
+    "co",
+    "using",
+    "resource",
+    "finalize",
+    "lock",
+    "mutex",
+    "semaphore",
+    "rwlock",
+    "read write lock"
+  ]
 }
