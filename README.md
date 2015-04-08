@@ -1,4 +1,28 @@
 # co-using
+
+Resource management with co
+
+```javascript
+
+let using = require('co-using')
+
+// Define how connections are created and destroyed
+let connectionPool = {
+  acquire: function () {
+    return new Connection().openAsync()
+  },
+  release: function (connection) {
+    connection.close()
+  }
+}
+
+// Use a connection, ensuring it gets destroyed
+using(connectionPool, function * (connection) {
+  yield connection.queryAsync(...)
+})
+
+```
+
 [![npm][npm-image]][npm-url]
 [![travis][travis-image]][travis-url]
 [![license][license-image]][license-url]

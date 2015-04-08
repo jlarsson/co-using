@@ -1,3 +1,6 @@
+# Tempz
+*.tgz
+
 # Logs
 logs
 *.log
