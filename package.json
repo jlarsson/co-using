@@ -1,0 +1,27 @@
+{
+  "name": "co-using",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --harmony"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jlarsson/co-using.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jlarsson/co-using/issues"
+  },
+  "homepage": "https://github.com/jlarsson/co-using",
+  "dependencies": {
+    "co": "^4.5.1",
+    "native-or-bluebird": "^1.2.0"
+  },
+  "devDependencies": {
+    "mocha": "^2.2.4"
+  },
+  "files": ["*.js"]
+}
