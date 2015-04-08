@@ -9,8 +9,7 @@ Resource management with [co](https://www.npmjs.com/package/co) (v4).
 
 Platform compatiblity is inherited from [co](https://www.npmjs.com/package/co#platform-compatibility).
 
-```javascript
-
+```js
 let using = require('co-using')
 
 // Define how connections are created and destroyed
@@ -27,12 +26,11 @@ let connectionPool = {
 using(connectionPool, function * (connection) {
   yield connection.queryAsync(...)
 })
-
 ```
 
 ## Api
 
-```javascript
+```js
 require('co-using')(<resource manager>, <co 4 compatible generator>)
 ```
 
@@ -46,7 +44,7 @@ A function that accepts a result from ```acquire```, typically in the purpose of
 
 The actual implementation of using is
 
-```javascript
+```js
 function using (resource, gen) {
   return co(function * () {
     let handle = yield resource.acquire()
@@ -62,7 +60,6 @@ function using (resource, gen) {
 }
 ```
 
-
 ## Extras
 
 Mutexes (mutual exclusion), semaphores (limited parallel access) and read write locks are synchronization primitives that follows the ```acquire/release``` pattern very well. For your convenience, they are all included.
@@ -72,14 +69,14 @@ Mutexes (mutual exclusion), semaphores (limited parallel access) and read write 
 ### Mutex
 Mutually exclusive access to generator code.
 
-```javascript
+```js
 let using = require('co-using')
 let mutex = require('co-using/mutex')
 let m = mutex()
 using(m, function * () { ... })
 ```
 A mutex can also be (globally) named,
-```javascript
+```js
 let m = mutex('mutex number one')
 ```
 A mutex can also be named in a specific scope,
@@ -91,18 +88,18 @@ let m = mutex('mutex number one', mutexNamingScope)
 ### Semaphore
 Limited parallel access to generator code.
 
-```javascript
+```js
 let using = require('co-using')
 let semaphore = require('co-using/semaphore')
 let sem = semaphore(10)
 using(sem, function * () { ... })
 ```
 A semaphore can also be (globally) named,
-```javascript
+```js
 let sem = semaphore(10, 'semaphore number one')
 ```
 A semaphore can also be named in a specific scope,
-```javascript
+```js
 let semaphoreNamingScope = {}
 let sem = semaphore('semaphore number one', semaphoreNamingScope)
 ```
@@ -113,7 +110,7 @@ Parallel access to generator code, with the following restrictions
 - if any reader is active, only other readers up to specified limit can be active
 - scheduling is fair, i.e. access is granted in the requested order
 
-```javascript
+```js
 let using = require('co-using')
 let rwlock = require('co-using/rwlock')
 let l = rwlock()
@@ -122,16 +119,16 @@ using(l.write(), function * () { ... })
 ```
 
 It is possible to specify max concurrency (default is many) of readers (note that for writers this is always 1).
-```javascript
+```js
 let l = rwlock(10)
 ```
 
 A read/write lock can also be (globally) named,
-```javascript
+```js
 let l = rwlock(10, 'lock number one')
 ```
 A read/write lock can also be named in a specific scope,
-```javascript
+```js
 let lockNamingScope = {}
 let lock = rwlock(10, 'lock number one', lockNamingScope)
 ```
