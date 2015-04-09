@@ -1,14 +1,31 @@
-# co-using
+Resource management with [co](https://www.npmjs.com/package/co).
 
-[![npm](https://img.shields.io/npm/v/co-using.svg?style=flat)](https://npmjs.org/package/co-using)
-[![travis](https://img.shields.io/travis/jlarsson/co-using.svg?style=flat)](https://travis-ci.org/jlarsson/co-using)
-[![license](https://img.shields.io/npm/l/co-using.svg?style=flat)](LICENSE.md)
-[![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](https://github.com/feross/standard)
+[![npm][npm-badge]][npm-url]
+[![travis][ci-badge]][ci-url]
+[![license][lic-badge]](LICENSE.md)
+[![js-standard-style][style-badge]][style-url]
 
-Resource management with [co](https://www.npmjs.com/package/co) (v4).
+## Features
+- automatic allocation and destruction of resources
+- co/koa friendly
+- easy schema for resource management
+- builtin synchronization resources - mutex, semaphore and read/write lock
 
-Platform compatiblity is inherited from [co](https://www.npmjs.com/package/co#platform-compatibility).
+```js
+// actual implementation from using.js
+function using (resource, gen) {
+  return co(function * () {
+    let handle = yield resource.acquire()
+    try {
+      return yield gen(handle)
+    } finally {
+      resource.release(handle)
+    }
+  })
+}
+```
 
+## Example
 ```js
 let using = require('co-using')
 
@@ -35,28 +52,11 @@ require('co-using')(<resource manager>, <co 4 compatible generator>)
 ```
 
 A resource manager is any object implementing ```acquire``` and ```release```.
-
-### acquire
-A function that returns a yieldable result. The result is then passed on to the generator and then finally to ```release```
-
-### release
-A function that accepts a result from ```acquire```, typically in the purpose of closing or destroying a resource.
-
-The actual implementation of using is
-
+The result of ```acquire``` should be a _thenable_-
 ```js
-function using (resource, gen) {
-  return co(function * () {
-    let handle = yield resource.acquire()
-    try {
-      let result = yield gen(handle)
-      resource.release(handle)
-      return result
-    } catch(err) {
-      resource.release(handle)
-      throw err
-    }
-  })
+let resourceManager = {
+  acquire: function () { return Promise.resolve(someValue) },
+  release: function (resource) { ... }
 }
 ```
 
@@ -64,7 +64,9 @@ function using (resource, gen) {
 
 Mutexes (mutual exclusion), semaphores (limited parallel access) and read write locks are synchronization primitives that follows the ```acquire/release``` pattern very well. For your convenience, they are all included.
 
-> Bug tracking tip: ```acquire``` and ```release``` are echoed to [require('debug')('co-using:X')](https://www.npmjs.com/package/debug) for named instances, where **X** is _mutex_, _semaphore_ or _rwlock_. Logging takes place when happening, not when queued/requested.
+All primitives can be named and optionally scoped to a naming container. This is useful when you want to control access to resources not known in advance, such as files or database records. Memory is reclaimed for named resources not active in any execution path.
+
+> Use ```DEBUG=co-using:* node --harmony <...>``` to get debug output.
 
 ### Mutex
 Mutually exclusive access to generator code.
@@ -132,3 +134,11 @@ A read/write lock can also be named in a specific scope,
 let lockNamingScope = {}
 let lock = rwlock(10, 'lock number one', lockNamingScope)
 ```
+
+[npm-badge]: https://img.shields.io/npm/v/co-using.svg?style=flat
+[npm-url]: https://npmjs.org/package/co-using
+[ci-badge]: https://img.shields.io/travis/jlarsson/co-using.svg?style=flat
+[ci-url]: https://travis-ci.org/jlarsson/co-using
+[lic-badge]: https://img.shields.io/npm/l/co-using.svg?style=flat
+[style-badge]: https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat
+[style-url]: https://github.com/feross/standard

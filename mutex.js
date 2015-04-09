@@ -4,9 +4,9 @@ let assert = require('assert')
 let debug = require('debug')('co-using:mutex')
 let Promise = require('native-or-bluebird')
 
-let defaultContainer = {}
-
 let Mutex = (function () {
+  let defaultContainer = {}
+
   function Mutex (name, container) {
     if (!(this instanceof Mutex)) {
       return new Mutex(name, container)
@@ -48,7 +48,7 @@ let Mutex = (function () {
 })()
 
 let MutexState = (function () {
-  let MutexState = function (nc) {
+  function MutexState (nc) {
     this.nc = nc
     this.pending = []
     this.current = null

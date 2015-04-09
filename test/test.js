@@ -9,26 +9,59 @@ let Mutex = require('../mutex')
 let Semaphore = require('../semaphore')
 let RwLock = require('../rwlock')
 
-describe('using custom resource manager', function () {
-  it('passes acquired resource to handler', function (done) {
-    let acquireCalled = false
-    let releaseCalled = false
-    let resourceManager = {
+describe('using(r, gen)', function () {
+  it ('releases despite of errors', function (done) {
+    let r = createResourceManager({
       acquire: function () {
-        acquireCalled = true
+        return Promise.resolve(1)
+      }
+    })
+    using(r, function * () {
+      throw new Error('generator error')
+    })
+    .catch(function (err) {
+      assert.equal('generator error', err.message)
+      assert.equal(1, r.acquireCallCount)
+      assert.equal(1, r.releaseCallCount)
+      done()
+    })
+  })
+
+  it ('doesnt release if acquire fails', function (done) {
+    let r = createResourceManager({
+      acquire: function () {
+        throw new Error('acquire error')
+      },
+      release: function () {
+        assert.fail('invalid call ')
+      }
+    })
+    using(r, function * () {
+      assert.fail('should not reach this')
+    })
+    .catch(function (err) {
+      assert.equal(1, r.acquireCallCount)
+      assert.equal(0, r.releaseCallCount)
+      assert.equal('acquire error', err.message)
+      done()
+    })
+  })
+
+  it('acquired resource is passed to generator', function (done) {
+    let r = createResourceManager({
+      acquire: function () {
         return Promise.resolve(123)
       },
       release: function (val) {
-        releaseCalled = true
-        assert.equal(val, 123)
+        assert.equal(123, val)
       }
-    }
-    using(resourceManager, function * (val) {
+    })
+    using(r, function * (val) {
       assert.equal(val, 123)
     })
     .then(function () {
-      assert(acquireCalled)
-      assert(releaseCalled)
+      assert.equal(1, r.acquireCallCount)
+      assert.equal(1, r.releaseCallCount)
       done()
     })
     .catch(done)
@@ -244,6 +277,20 @@ function testResource (resource, options) {
     })
 }
 
+function createResourceManager(mixin) {
+  return {
+    acquireCallCount: 0,
+    releaseCallCount: 0,
+    acquire: function () {
+      ++this.acquireCallCount
+      return mixin.acquire()
+    },
+    release: function (v) {
+      ++this.releaseCallCount
+      return mixin.release && mixin.release(v)
+    }
+  }
+}
 function delay (timeout) {
   return new Promise(function (resolve) {
     setTimeout(function () {

@@ -6,8 +6,6 @@ let Promise = require('native-or-bluebird')
 
 module.exports = RwLock
 
-let defaultContainer = {}
-
 function RwLock (maxReaders, name, container) {
   if (!(this instanceof RwLock)) {
     return new RwLock(maxReaders, name, container)
@@ -24,6 +22,8 @@ proto.read = function () { return this.readLock }
 proto.write = function () { return this.writeLock }
 
 let InternalRwLock = (function () {
+  let defaultContainer = {}
+  
   function InternalRwLock (maxReaders, name, container) {
     this.pending = []
     this.writer = null

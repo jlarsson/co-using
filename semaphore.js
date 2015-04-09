@@ -4,9 +4,9 @@ let assert = require('assert')
 let debug = require('debug')('co-using:semaphore')
 let Promise = require('native-or-bluebird')
 
-let defaultContainer = {}
-
 let Semaphore = (function () {
+  let defaultContainer = {}
+
   function Semaphore (maxCount, name, container) {
     if (!(this instanceof Semaphore)) {
       return new Semaphore(maxCount, name, container)
