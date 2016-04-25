@@ -2,7 +2,7 @@
 
 let assert = require('assert')
 let debug = require('debug')('co-using:semaphore')
-let Promise = require('native-or-bluebird')
+let Promise = require('any-promise')
 
 let Semaphore = (function () {
   let defaultContainer = {}

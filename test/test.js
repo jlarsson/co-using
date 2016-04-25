@@ -3,14 +3,14 @@
 'use strict'
 
 let assert = require('assert')
-let Promise = require('native-or-bluebird')
+let Promise = require('any-promise')
 let using = require('../using')
 let Mutex = require('../mutex')
 let Semaphore = require('../semaphore')
 let RwLock = require('../rwlock')
 
 describe('using(r, gen)', function () {
-  it ('releases despite of errors', function (done) {
+  it('releases despite of errors', function (done) {
     let r = createResourceManager({
       acquire: function () {
         return Promise.resolve(1)
@@ -27,7 +27,7 @@ describe('using(r, gen)', function () {
     })
   })
 
-  it ('doesnt release if acquire fails', function (done) {
+  it('doesnt release if acquire fails', function (done) {
     let r = createResourceManager({
       acquire: function () {
         throw new Error('acquire error')

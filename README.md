@@ -1,4 +1,4 @@
-Resource management with [co](https://www.npmjs.com/package/co).
+Resource management with co.
 
 [![npm][npm-badge]][npm-url]
 [![travis][ci-badge]][ci-url]
@@ -7,7 +7,7 @@ Resource management with [co](https://www.npmjs.com/package/co).
 
 ## Features
 - automatic allocation and destruction of resources
-- co/koa friendly
+- [co](https://www.npmjs.com/package/co)/[koa](https://www.npmjs.com/package/koa) friendly
 - easy schema for resource management
 - builtin synchronization resources - mutex, semaphore and read/write lock
 

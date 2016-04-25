@@ -2,7 +2,7 @@
 
 let assert = require('assert')
 let debug = require('debug')('co-using:rwlock')
-let Promise = require('native-or-bluebird')
+let Promise = require('any-promise')
 
 module.exports = RwLock
 
@@ -23,7 +23,7 @@ proto.write = function () { return this.writeLock }
 
 let InternalRwLock = (function () {
   let defaultContainer = {}
-  
+
   function InternalRwLock (maxReaders, name, container) {
     this.pending = []
     this.writer = null

@@ -2,7 +2,7 @@
 
 let assert = require('assert')
 let debug = require('debug')('co-using:mutex')
-let Promise = require('native-or-bluebird')
+let Promise = require('any-promise')
 
 let Mutex = (function () {
   let defaultContainer = {}
